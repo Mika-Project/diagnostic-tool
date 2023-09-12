@@ -1,32 +1,15 @@
-import time
-import math 
 import sys 
 import multiprocessing
+from cpu_load_generator import load_single_core, load_all_cores, from_profile
+
 
 def generate_cpu_load(interval=int(sys.argv[1]),utilization=int(sys.argv[2])):
-    "Generate a utilization % for a duration of interval seconds"
-    start_time = time.time()
-    for i in range(0,int(interval)):
-        # print("About to do some arithmetic")
-        while time.time()-start_time < utilization/100.0:
-            result = 0
-            for i in range(1, 100000):
-                result += math.sin(math.sqrt(i)) * math.exp(-i / 1000)
-                a = math.sqrt(1024*1024*1024 * (i%100))
-        # print(str(i) + ". About to sleep")
-        time.sleep(1-utilization/100.0)
-        start_time += 1
+    cpu_percent = utilization / 100
+    load_all_cores(duration_s=interval, target_load=cpu_percent)
+
+
 
 #----START OF SCRIPT
 if __name__=='__main__':
     print("No of cpu:", multiprocessing.cpu_count())
-    if len(sys.argv)>2:
-        processes = []
-        for _ in range (multiprocessing.cpu_count()):
-            p = multiprocessing.Process(target =generate_cpu_load)
-            p.start()
-            processes.append(p)
-        for process in processes:
-            process.join()        
-    else:
-        print("Usage:\n python %s interval utilization"%__file__)
+    generate_cpu_load()
