@@ -232,6 +232,8 @@ def createProcessesTable():
 <div class="container">
     <h1 id="systemproc">Running system processes</h1>
     <p>Total processes: {total_processes}</p>
+    <p>Total CPU percent: {totalCPUPercent}% <span style="color:red"><b>BROKEN</b></span></p>
+    <p>Total memory percent: {totalMemoryPercent}%</p>
     <table>
         <tr>
             <th>PID</th>
@@ -241,11 +243,85 @@ def createProcessesTable():
         </tr>
         {table_rows}
     </table>
-    <p>Total CPU percent: {totalCPUPercent}%</p>
-    <p>Total memory percent: {totalMemoryPercent}%</p>
 </div>
     """
     return html
+
+
+def getPossibleWarnings(mintemp, maxtemp, avgtemp, interval, idletemp, dropOff):
+    running_processes = get_running_processes()
+    totalMemoryPercent = 0
+    for process in running_processes:
+        totalMemoryPercent += process['memory_percent']
+    allIssues = []
+
+    warningStatus = False
+
+    if maxtemp is not None:
+        if maxtemp > 80:
+            allIssues.append(f"<p><span style='color:orange'>[WARNING]</span> - Maximum CPU temperature during benchmark is high ({maxtemp}°C).</p>")
+            warningStatus = True
+    if avgtemp is not None:
+        if avgtemp > 70:
+            allIssues.append(f"<p><span style='color:orange'>[WARNING]</span> - Average CPU temperature during benchmark is high ({avgtemp}°C).</p>")
+            warningStatus = True
+    if idletemp is not None:
+        if idletemp > 55:
+            allIssues.append(f"<p><span style='color:orange'>[WARNING]</span> - CPU idle temperature is high ({idletemp}°C).</p>")
+            warningStatus = True
+    
+    if warningStatus == True:
+        allIssues.append(f"<p>1. This could potentially be a cooling problem, try checking your termal paste if it hasn't been renewed in a while. Or maybe even replacing the CPU cooler all together. If the Idle temp is high you can also check your current running background processes.</p>") 
+
+    returnInfo = ""
+    for issue in allIssues:
+        returnInfo += issue
+
+    return returnInfo
+
+
+def getPossibleInfo(mintemp, maxtemp, avgtemp, interval, idletemp, dropOff):
+    running_processes = get_running_processes()
+    totalMemoryPercent = 0
+    for process in running_processes:
+        totalMemoryPercent += process['memory_percent']
+    allIssues = []
+
+    ram = psutil.virtual_memory()
+    total_ram = ram.total // (1024 * 1024 * 1024)
+    print(total_ram)
+    
+    # Declaring variables
+    memoryInfo = False
+    lowDurationInfo = False
+    lowCpuTempInfo = False
+
+    if idletemp is not None:
+        if idletemp < 30:
+            allIssues.append(f"<p><span style='color:#0096FF'>[INFO]</span> - Minimum CPU temperature is low ({mintemp}°C).</p>")
+            lowCpuTempInfo = True
+    if interval is not None:
+        if interval < 60:
+            allIssues.append(f"<p><span style='color:#0096FF'>[INFO]</span> - Benchmark duration is low ({interval} seconds).</p>")
+            lowDurationInfo = True
+    if totalMemoryPercent is not None:
+        if totalMemoryPercent > 70:
+            if total_ram < 17:
+                allIssues.append(f"<p><span style='color:#0096FF'>[INFO]</span> - Total memory usage is high ({totalMemoryPercent}%).</p>")
+                memoryInfo = True
+
+    if lowCpuTempInfo == True:
+        allIssues.append(f"<p>1. You have a low CPU idle temparature, this doesn't have to be dangarous just make sure to prevent condensation. Condensation occurs when the temp of the components than the air surrounding it.</p>")
+    if lowDurationInfo == True:
+        allIssues.append(f"<p>2. Your benchmark duration is low, this could make the result of the benchmark invalid.</p>")
+    if memoryInfo == True:
+        allIssues.append(f"<p>3. Memory usage is high, do you have many tabs open on the background?</p>")
+
+    returnInfo = ""
+    for issue in allIssues:
+        returnInfo += issue
+    
+    return returnInfo
 
 
 def printResults(min_temperature, max_temperature, avg_temperature, interval, idle_temperature, dropOff):
@@ -253,6 +329,8 @@ def printResults(min_temperature, max_temperature, avg_temperature, interval, id
     processesTable = createProcessesTable()
     batteryStatus = get_battery_status()
     systemSpecs = getSystemSpecs()
+    possible_warnings =  getPossibleWarnings(min_temperature, max_temperature, avg_temperature, interval, idle_temperature, dropOff)
+    possible_info = getPossibleInfo(min_temperature, max_temperature, avg_temperature, interval, idle_temperature, dropOff)
 
     # Default values for variables to prevent errors 
     if idle_temperature is None: idle_temperature = "N/A"
@@ -358,12 +436,18 @@ def printResults(min_temperature, max_temperature, avg_temperature, interval, id
         <li><a href="#systemproc">Running system processes</a></li>
     </ul>
     <div class="container">
+        <h1>Possible problems (BETA)</h1>
+        <p><b>Some of the information retrieved by this program might be incorrect. This is because the program is still in BETA. If you find any problems, please open an issue on the github repo.</b></p>
+        {possible_warnings}
+        {possible_info}
+    <hr>
+    <div class="container">
         <p>Report generated on {time}</p>
         <p>System benchmark version: {version}</p>
     </div>
     <div class="container">
         <h1 id="systemspec">System specifications</h1>
-        <p>CPU idle temp: {idle_temperature}<br>CPU: {systemSpecs['CPU']} <br>CPU Architecture: {systemSpecs['CPU Architecture']} <br>CPU Cores: {systemSpecs['CPU Cores']} <br>CPU Threads: {systemSpecs['CPU Threads']} <br>Max CPU Frequency: {systemSpecs['Max CPU Frequency']} <br>Base CPU Frequency: {systemSpecs['Base CPU Frequency']} <br>GPU Names: {systemSpecs['GPU Names']} <br>Network Cards: {systemSpecs['Network Cards']} <br>Total RAM: {systemSpecs['Total RAM']}MB </p>
+        <p>CPU idle temp: {idle_temperature}<br>CPU: {systemSpecs['CPU']} <br>CPU Architecture: {systemSpecs['CPU Architecture']} <br>CPU Cores: {systemSpecs['CPU Cores']} <br>CPU Threads: {systemSpecs['CPU Threads']} <br>Max CPU Frequency: {systemSpecs['Max CPU Frequency']}mhz<br>Base CPU Frequency: {systemSpecs['Base CPU Frequency']}mhz<br>GPU Names: {systemSpecs['GPU Names']} <br>Network Cards: {systemSpecs['Network Cards']} <br>Total RAM: {systemSpecs['Total RAM']}MB </p>
     </div>
     <hr>
     <div class="container">
