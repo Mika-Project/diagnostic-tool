@@ -6,6 +6,7 @@
   - [Support](#support)
   - [Packages](#packages)
   - [What it does](#what-it-does)
+  - [Versions explanation](#versions-explanation)
 - [Guides](#guides)
   - [Manual guide](#manual-install-guide)
   - [Automatic install guide](#auto-install)
@@ -50,6 +51,18 @@ These packages can be easily installed with pip. (look at the install guid for m
 
 This script will gather basic data about the system and will run a small CPU benchmark to measure the temperatures. (More details can be found under the "Output" section.)
 
+
+### Versions-explanation
+
+The versions can be found at the releases tab on the github repo. The releases are made like this:
+
+day.month.year-BETA
+
+| release type | format                | example         |
+| ------------ | --------------------- | --------------- |
+| stable       | day.month.year-STABLE | 20.08.23-STABLE |
+| beta         | day.month.year-BETA   | 12.09.23-BETA   |
+
 ## Guides
 
 ### Manual-Install-guide
@@ -70,10 +83,7 @@ Install at least python 3.10 or above. Versions below that will most likely work
 
 #### Windows-install
 
-
 In this version of the script there is NO SUPPORT for windows. This was made in the original script, so if you're interested in the windows support please check that out [here](https://github.com/Luciousdev/pc-test)
-
-
 
 #### Linux-install
 

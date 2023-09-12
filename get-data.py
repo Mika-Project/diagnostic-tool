@@ -20,7 +20,7 @@ def prOk(skk):print("\033[92m{}\033[00m" .format(skk))
 def prWarning(skk):print("\033[93m{}\033[00m" .format(skk))
 def prInfo(skk):print("\033[94m{}\033[00m" .format(skk))
 
-version = "0.5.0 BETA"
+version = "12.09.23 BETA"
 
 #---------------------------------------------------------#
 #                                                         #                            
