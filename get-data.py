@@ -22,6 +22,9 @@ def prInfo(skk):print("\033[94m{}\033[00m" .format(skk))
 
 version = "12.09.23 BETA"
 
+user_home = os.path.expanduser("~")
+subdirectory = "Documents"
+
 #---------------------------------------------------------#
 #                                                         #                            
 # ------------------ GENERAL SYSTEM INFO -----------------#
@@ -201,7 +204,9 @@ def generate_line_graph(temperatures, filename):
     
     ax.grid(True, color='#ffffff', linestyle='--')  
 
-    plt.savefig(f"{filename}_cpu_temperature_graph.png", bbox_inches='tight')
+    file_path = os.path.join(user_home, subdirectory)
+
+    plt.savefig(f"{file_path}/{filename}_cpu_temperature_graph.png", bbox_inches='tight')
     plt.close()
 
     print('Line graph generated: ', f"{filename}_cpu_temperature_graph.png")
@@ -472,10 +477,17 @@ def printResults(min_temperature, max_temperature, avg_temperature, interval, id
 </html>
 """
 
-    write = open(time + ".html", "w")
-    write.write(template)
-    write.close()
-    prOk(f"[OK] - HTML report generated: {time}.html")
+    # write = open(time + ".html", "w")
+    # write.write(template)
+    # write.close()
+    # prOk(f"[OK] - HTML report generated: {time}.html")
+    
+    file_path = os.path.join(user_home, subdirectory, f"{time}.html")
+
+    with open(file_path, "w") as write:
+        write.write(template)
+
+    prOk(f"[OK] - HTML report generated: {file_path}")
 
 
 
